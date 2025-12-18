@@ -40,6 +40,11 @@
 				"command": "vsnetrw.open",
 				"title": "Open Explorer",
 				"category": "vsnetrw"
+			},
+			{
+				"command": "vsnetrw.toggleFullPaths",
+				"title": "Toggle Full Paths",
+				"category": "vsnetrw"
 			}
 		],
 		"keybindings": [
@@ -97,6 +102,11 @@
 				"command": "vsnetrw.refresh",
 				"key": "ctrl+l",
 				"when": "editorTextFocus && editorLangId == vsnetrw && vim.mode =~ /^(?!SearchInProgressMode|CommandlineInProgress).*$/"
+			},
+			{
+				"command": "vsnetrw.toggleFullPaths",
+				"key": "shift+p",
+				"when": "editorTextFocus && editorLangId == vsnetrw && vim.mode =~ /^(?!SearchInProgressMode|CommandlineInProgress).*$/"
 			}
 		],
 		"grammars": [
@@ -108,7 +118,6 @@
 		],
 		"configurationDefaults": {
 			"[vsnetrw]": {
-				"editor.lineNumbers": "off",
 				"editor.minimap.enabled": false,
 				"editor.renderWhitespace": "none"
 			}

@@ -24,6 +24,11 @@ let previousFilePath = "";
  */
 let cursorPositions = new Map();
 
+/**
+ * Whether to show full paths instead of just file names.
+ */
+let showFullPaths = false;
+
 
 /**
  * Creates a vsnetrw document uri for a given path.
@@ -70,6 +75,14 @@ function refresh() {
   let uri = createUri(dir);
   uriChangeEmitter.fire(uri);
   refreshDiagnostics();
+}
+
+/**
+ * Toggle between showing full paths and just file names.
+ */
+function toggleFullPaths() {
+  showFullPaths = !showFullPaths;
+  refresh();
 }
 
 /**
@@ -184,6 +197,28 @@ async function getFileType(file) {
 }
 
 /**
+ * Gets the file path from a line text, handling both relative names and full paths.
+ * @param {string} lineText The text of the line
+ * @param {string} baseDir The base directory
+ * @returns {string} The full path to the file
+ */
+function getFilePathFromLine(lineText, baseDir) {
+  // Handle parent directory reference
+  if (lineText === "../") {
+    return path.dirname(baseDir);
+  }
+  
+  // If showing full paths, the line text is already a full path
+  if (showFullPaths) {
+    // Remove trailing slash for directories
+    return lineText.endsWith("/") ? lineText.slice(0, -1) : lineText;
+  }
+  
+  // Otherwise, it's a relative path
+  return path.join(baseDir, lineText);
+}
+
+/**
  * Returns the name of the file under the cursor in the current vsnetrw
  * document.
  * @returns {string}
@@ -244,24 +279,27 @@ async function closeExplorer() {
  * If the name includes a path that does not exist, then it will be created.
  */
 async function renameFileUnderCursor() {
-  let file = getLineUnderCursor();
+  let lineText = getLineUnderCursor();
   let base = getCurrentDir();
+  let srcPath = getFilePathFromLine(lineText, base);
+  
+  // Get display name (just the filename part) for the input box
+  let displayName = showFullPaths ? path.basename(srcPath) : lineText.endsWith("/") ? lineText.slice(0, -1) : lineText;
 
   let newName = await window.showInputBox({
     title: "Rename",
-    value: file,
+    value: displayName,
     placeHolder: "Enter a new filename",
   });
 
   if (!newName) return;
 
-  let srcPath = path.join(base, file);
-  let dstPath = path.join(base, newName);
+  let dstPath = showFullPaths ? path.join(path.dirname(srcPath), newName) : path.join(base, newName);
   let dstFileType = await getFileType(dstPath);
 
   // Treat renames like "a.txt -> ../" as "a.txt -> ../a.txt"
   if (dstFileType === FileType.Directory) {
-    dstPath = path.join(dstPath, file);
+    dstPath = path.join(dstPath, path.basename(srcPath));
     dstFileType = await getFileType(dstPath);
   }
 
@@ -391,9 +429,9 @@ async function openNewExplorer(dir = getInitialDir()) {
  * @param {ViewColumn} [viewColumn]
  */
 async function openFileUnderCursor(viewColumn) {
-  let relativePath = getLineUnderCursor();
+  let lineText = getLineUnderCursor();
   let basePath = getCurrentDir();
-  let newPath = path.resolve(basePath, relativePath);
+  let newPath = getFilePathFromLine(lineText, basePath);
   let uri = Uri.file(newPath);
   let stat = await workspace.fs.stat(uri);
 
@@ -473,7 +511,12 @@ async function provideTextDocumentContent(documentUri) {
   });
 
   let listings = results.map(([name, type]) => {
-    return type & FileType.Directory ? `${name}/` : name;
+    if (showFullPaths) {
+      let fullPath = path.join(pathName, name);
+      return type & FileType.Directory ? `${fullPath}/` : fullPath;
+    } else {
+      return type & FileType.Directory ? `${name}/` : name;
+    }
   });
 
   let hasParent = path.dirname(pathName) !== pathName;
@@ -567,6 +610,7 @@ function activate(context) {
     commands.registerCommand("vsnetrw.createDir", createDir),
     commands.registerCommand("vsnetrw.refresh", refresh),
     commands.registerCommand("vsnetrw.close", closeExplorer),
+    commands.registerCommand("vsnetrw.toggleFullPaths", toggleFullPaths),
   );
 }
 
