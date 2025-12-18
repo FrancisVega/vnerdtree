@@ -46,7 +46,7 @@
 			{
 				"command": "vsnetrw.open",
 				"key": "-",
-				"when": "!activeEditor"
+				"when": "!activeEditor && !inputFocus && !inputBoxFocus && !searchViewletFocus"
 			},
 			{
 				"command": "vsnetrw.close",
