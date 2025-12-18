@@ -2,7 +2,13 @@
 	"name": "vnerdtree",
 	"version": "0.0.1",
 	"description": "A minimal view of NERDTree for VSCode",
+	"publisher": "vnerdtree",
 	"icon": "icon.png",
+	"author": "Hisco Vega",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/FrancisVega/vnerdtree.git"
+	},
 	"keywords": [
 		"netrw",
 		"vim",
@@ -17,7 +23,7 @@
 		"vscode": "^1.80.0"
 	},
 	"scripts": {
-		"build": "tsc && vsce package",
+		"build": "tsc && npx @vscode/vsce package",
 		"install": "yarn build && code --install-extension *.vsix"
 	},
 	"activationEvents": [
@@ -203,9 +209,9 @@
 		}
 	},
 	"devDependencies": {
-		"@types/node": "^18.0.0",
-		"@types/vscode": "^1.68.1",
-		"typescript": "^4.7.4",
-		"vsce": "^2.9.2"
+		"@types/node": "^20.0.0",
+		"@types/vscode": "^1.0.0",
+		"typescript": "^5.0.0",
+		"@vscode/vsce": "^2.0.0"
 	}
 }
