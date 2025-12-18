@@ -15,7 +15,7 @@
 	"license": "Unlicense",
 	"repository": "danprince/vsnetrw",
 	"engines": {
-		"vscode": "^1.68.0"
+		"vscode": "^1.80.0"
 	},
 	"scripts": {
 		"test": "node tests/index.js",
